@@ -48,6 +48,9 @@ namespace Automatonymous.Tests
             public State CurrentState { get; set; }
 
             public bool ShouldNotBeCalled { get; set; }
+
+            public Func<bool> Condition => () => true;
+            public bool CalledInIfBlock { get; set; }
         }
 
 
@@ -67,6 +70,8 @@ namespace Automatonymous.Tests
                                 context.Instance.ExceptionMessage = context.Exception.Message;
                                 context.Instance.ExceptionType = context.Exception.GetType();
                             })
+                            .If(context => context.Instance.Condition(), b =>
+                                b.Then(c => c.Instance.CalledInIfBlock = true))
                             .TransitionTo(Failed))
                         .Catch<Exception>(ex => ex
                             .Then(context => context.Instance.ShouldNotBeCalled = true)));
