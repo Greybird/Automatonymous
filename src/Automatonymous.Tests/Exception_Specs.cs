@@ -13,6 +13,7 @@
 namespace Automatonymous.Tests
 {
     using System;
+    using System.Threading.Tasks;
     using GreenPipes;
     using GreenPipes.Introspection;
     using NUnit.Framework;
@@ -50,7 +51,10 @@ namespace Automatonymous.Tests
             public bool ShouldNotBeCalled { get; set; }
 
             public Func<bool> Condition => () => true;
-            public bool CalledInIfBlock { get; set; }
+            public bool CalledInIf { get; set; }
+
+            public Func<Task<bool>> ConditionAsync => () => Task.FromResult(true);
+            public bool CalledInIfAsync { get; set; }
         }
 
 
@@ -71,7 +75,9 @@ namespace Automatonymous.Tests
                                 context.Instance.ExceptionType = context.Exception.GetType();
                             })
                             .If(context => context.Instance.Condition(), b =>
-                                b.Then(c => c.Instance.CalledInIfBlock = true))
+                                b.Then(c => c.Instance.CalledInIf = true))
+                            .IfAsync(context => context.Instance.ConditionAsync(), b =>
+                                b.Then(c => c.Instance.CalledInIfAsync = true))
                             .TransitionTo(Failed))
                         .Catch<Exception>(ex => ex
                             .Then(context => context.Instance.ShouldNotBeCalled = true)));
@@ -126,6 +132,18 @@ namespace Automatonymous.Tests
         public void Should_not_have_called_the_second_action()
         {
             Assert.IsTrue(_instance.NotCalled);
+        }
+
+        [Test]
+        public void Should_have_called_the_action_under_a_condition()
+        {
+            Assert.IsTrue(_instance.CalledInIf);
+        }
+
+        [Test]
+        public void Should_have_called_the_action_under_an_async_condition()
+        {
+            Assert.IsTrue(_instance.CalledInIfAsync);
         }
     }
 

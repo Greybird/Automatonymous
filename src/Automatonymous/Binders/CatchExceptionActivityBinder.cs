@@ -85,6 +85,18 @@ namespace Automatonymous.Binders
 
             return new CatchExceptionActivityBinder<TInstance, TException>(_machine, _event, _activities, conditionBinder);
         }
+
+        public ExceptionActivityBinder<TInstance, TException> IfAsync(StateMachineConditionAsync<TInstance> condition,
+            Func<ExceptionActivityBinder<TInstance, TException>, ExceptionActivityBinder<TInstance, TException>> activityCallback)
+        {
+            ExceptionActivityBinder<TInstance, TException> binder = new CatchExceptionActivityBinder<TInstance, TException>(_machine, _event);
+
+            binder = activityCallback(binder);
+
+            var conditionBinder = new AsyncConditionalActivityBinder<TInstance>(_event, condition, binder);
+
+            return new CatchExceptionActivityBinder<TInstance, TException>(_machine, _event, _activities, conditionBinder);
+        }
     }
 
 
@@ -164,6 +176,20 @@ namespace Automatonymous.Binders
             binder = activityCallback(binder);
 
             var conditionBinder = new ConditionalActivityBinder<TInstance, TData>(_event, condition, binder);
+
+            return new CatchExceptionActivityBinder<TInstance, TData, TException>(_machine, _event, _activities, conditionBinder);
+        }
+
+        public ExceptionActivityBinder<TInstance, TData, TException> IfAsync(StateMachineConditionAsync<TInstance, TData> condition,
+            Func<ExceptionActivityBinder<TInstance, TData, TException>, ExceptionActivityBinder<TInstance, TData, TException>>
+                activityCallback)
+        {
+            ExceptionActivityBinder<TInstance, TData, TException> binder =
+                new CatchExceptionActivityBinder<TInstance, TData, TException>(_machine, _event);
+
+            binder = activityCallback(binder);
+
+            var conditionBinder = new AsyncConditionalActivityBinder<TInstance, TData>(_event, condition, binder);
 
             return new CatchExceptionActivityBinder<TInstance, TData, TException>(_machine, _event, _activities, conditionBinder);
         }
