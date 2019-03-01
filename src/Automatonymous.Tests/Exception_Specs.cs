@@ -48,6 +48,9 @@ namespace Automatonymous.Tests
             public State CurrentState { get; set; }
 
             public bool ShouldNotBeCalled { get; set; }
+
+            public Func<bool> Condition => () => true;
+            public bool CalledInIf { get; set; }
         }
 
 
@@ -67,6 +70,8 @@ namespace Automatonymous.Tests
                                 context.Instance.ExceptionMessage = context.Exception.Message;
                                 context.Instance.ExceptionType = context.Exception.GetType();
                             })
+                            .If(context => context.Instance.Condition(), b =>
+                                b.Then(c => c.Instance.CalledInIf = true))
                             .TransitionTo(Failed))
                         .Catch<Exception>(ex => ex
                             .Then(context => context.Instance.ShouldNotBeCalled = true)));
@@ -121,6 +126,12 @@ namespace Automatonymous.Tests
         public void Should_not_have_called_the_second_action()
         {
             Assert.IsTrue(_instance.NotCalled);
+        }
+
+        [Test]
+        public void Should_have_called_the_action_under_a_condition()
+        {
+            Assert.IsTrue(_instance.CalledInIf);
         }
     }
 
@@ -291,6 +302,9 @@ namespace Automatonymous.Tests
             public Type ExceptionType { get; set; }
             public string ExceptionMessage { get; set; }
             public State CurrentState { get; set; }
+
+            public Func<bool> Condition => () => true;
+            public bool CalledInIf { get; set; }
         }
 
 
@@ -317,6 +331,8 @@ namespace Automatonymous.Tests
                                 context.Instance.ExceptionMessage = context.Exception.Message;
                                 context.Instance.ExceptionType = context.Exception.GetType();
                             })
+                            .If(context => context.Instance.Condition(), b =>
+                                b.Then(c => c.Instance.CalledInIf = true))
                             .TransitionTo(Failed)));
                 
             }
@@ -355,6 +371,12 @@ namespace Automatonymous.Tests
         public void Should_not_have_called_the_second_action()
         {
             Assert.IsTrue(_instance.NotCalled);
+        }
+
+        [Test]
+        public void Should_have_called_the_action_under_a_condition()
+        {
+            Assert.IsTrue(_instance.CalledInIf);
         }
     }
 }
